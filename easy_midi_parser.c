@@ -28,46 +28,10 @@ int main(int argc, char *argv[])
     {
         parse_tracks(file, i);
     }
-    /* for (int i = 0; i < 36; ++i) */
-    /* { */
-    /*     fgetc(file); */
-    /* } */
-
-    /* char end = 0; */
-    /* const char *op; */
-    /* do */
-    /* { */
-    /*     int delta = read_vln(file); */
-    /*     printf("delta %d ticks\t\t", delta); */
-    /*     int status, pitch, velocity; */
-    /*     status = fgetc(file); */
-    /*     pitch = fgetc(file); */
-    /*     velocity = fgetc(file); */
-    /*     if (status == 0x90) */
-    /*     { */
-    /*         op = PRESS; */
-    /*         printf("op: %s\t\tpitch:0x%x\t\tvelocity:0x%x\n", op, pitch, velocity); */
-    /*     } */
-    /*     else if (status == 0x80) */
-    /*     { */
-    /*         op = RELEASE; */
-    /*         printf("op: %s\t\tpitch:0x%x\t\tvelocity:0x%x\n", op, pitch, velocity); */
-    /*     } */
-    /*     else */
-    /*     { */
-    /*         printf("status: 0x%x\t\tpitch:0x%x\t\tvelocity:0x%x\n", status, pitch, velocity); */
-    /*     } */
-
-    /*     if (status == 0xff && pitch == 0x2f && velocity == 0x00) */
-    /*     { */
-    /*         end = 1; */
-    /*     } */
-    /*     while (!end); */
-
+    fclose(file);
     /* unit test */
     /* test_read_vln(); */
-    /* parse_header(file); */
-    fclose(file);
+    /* parse_header(file); */    
     return 0;
 }
 
@@ -76,11 +40,11 @@ char parse_events(FILE *file)
     char buff[256];
     memset(buff, 0, 256);
     int delta = read_vln(file);
-    printf("delta: %d\n", delta);
+    printf("delta\t%d\t", delta);
     unsigned char op = fgetc(file);
     if (op == 0xff)
     {
-        printf("meta event\n");
+        printf("[meta event]\t");
         char type = fgetc(file);
         int len = read_vln(file);
         switch (type)
@@ -105,11 +69,13 @@ char parse_events(FILE *file)
     else if (op >= 0xf0)
     {
         // system common message
-        printf("system common message\n");
+        printf("[sysex event]\t");
+        printf("\n");
     }
     else
     {
         // channel voice message
+        printf("[midi event]\t");
         char hop = (op & VMHM) >> 4;
         char channel = (op & VMLM);
         switch (hop)
@@ -119,7 +85,7 @@ char parse_events(FILE *file)
             int pitch = fgetc(file);
             int velocity = fgetc(file);
             const char *move = RELEASE;
-            printf("Note %d %s on channel %lld with velocity %d\n", pitch, move, channel, velocity);
+            printf("Note\t%d\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, channel, velocity);
             break;
         }
         case 9:
@@ -127,7 +93,7 @@ char parse_events(FILE *file)
             int pitch = fgetc(file);
             int velocity = fgetc(file);
             const char *move = PRESS;
-            printf("Note %d %s on channel %lld with velocity %d\n", pitch, move, channel, velocity);
+            printf("Note\t%d\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, channel, velocity);
             break;
         }
         default:
