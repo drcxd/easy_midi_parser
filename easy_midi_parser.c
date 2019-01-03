@@ -85,7 +85,7 @@ char parse_events(FILE *file)
             int pitch = fgetc(file);
             int velocity = fgetc(file);
             const char *move = RELEASE;
-            printf("Note\t%d\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, channel, velocity);
+            printf("Note\t0x%x\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, channel, velocity);
             break;
         }
         case 9:
@@ -93,7 +93,7 @@ char parse_events(FILE *file)
             int pitch = fgetc(file);
             int velocity = fgetc(file);
             const char *move = PRESS;
-            printf("Note\t%d\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, channel, velocity);
+            printf("Note\t0x%x\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, channel, velocity);
             break;
         }
         default:
