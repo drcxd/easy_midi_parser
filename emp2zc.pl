@@ -100,11 +100,11 @@ for (my $i = 0; $i < @transactions; ++$i)
     }
 }
 
-# for (@out)
-# {
-#     say;
-# }
-for (@transactions)
+for (@out)
 {
     say;
 }
+# for (@transactions)
+# {
+#     say;
+# }
