@@ -37,6 +37,7 @@ int main(int argc, char *argv[])
 
 char parse_events(FILE *file)
 {
+    static unsigned char prev_op = 0;
     char buff[256];
     memset(buff, 0, 256);
     int delta = read_vln(file);
@@ -91,50 +92,95 @@ char parse_events(FILE *file)
         }
         default:
         {
-            fprintf(stderr, "Unhandled meta event type: 0x%x\n", type);
             for (int i = 0; i < len; ++i)
             {
                 fgetc(file);
             }
+            printf("\n");
+            fprintf(stderr, "Unhandled meta event type: 0x%x\n", type);
+            fprintf(stderr, "curren file position: %d\n", ftell(file));
             break;
         }
         }
+        prev_op = 0;
     }
     else if (op >= 0xf0)
     {
         // system common message
         printf("[sysex event]\t");
         printf("\n");
+        prev_op = 0;
     }
     else
     {
-        // channel voice message
+        /* channel voice message */
         printf("[midi event]\t");
         char hop = (op & VMHM) >> 4;
         char channel = (op & VMLM);
         switch (hop)
         {
-        case 8:
+        case 8: /* 0b1000 */
         {
             int pitch = fgetc(file);
             int velocity = fgetc(file);
             const char *move = RELEASE;
             printf("Note\t0x%x\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, channel, velocity);
+            prev_op = op;
             break;
         }
-        case 9:
+        case 9: /* 0b1001 */
         {
             int pitch = fgetc(file);
             int velocity = fgetc(file);
             const char *move = PRESS;
             printf("Note\t0x%x\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, channel, velocity);
+            prev_op = op;
             break;
         }
         default:
         {
-            fprintf(stderr, "Unhandled MTrk Event op: 0x%hhx\n", op);
-            printf("\n");
-        }            
+            /* may be it is the running status in effect */
+            if (prev_op)
+            {
+                char prev_hop = (prev_op & VMHM) >> 4;
+                char prev_channel = (prev_op & VMLM);
+                switch (prev_hop)
+                {
+                case 8:
+                {
+                    int pitch = op;
+                    int velocity = fgetc(file);
+                    const char *move = RELEASE;
+                    printf("Note\t0x%x\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, prev_channel, velocity);                    
+                    break;
+                }
+                case 9:
+                {
+                    int pitch = op;
+                    int velocity = fgetc(file);
+                    const char *move = PRESS;
+                    printf("Note\t0x%x\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, prev_channel, velocity);
+                    break;
+                }
+                default:
+                {
+                    prev_op = 0;
+                    printf("\n");
+                    fprintf(stderr, "Running status Unhandled MTrk Event op: 0x%hhx\n", op);
+                    fprintf(stderr, "Current file position: %d\n", ftell(file));
+                    break;
+                }
+                }
+            }
+            else
+            {
+                /* not running status, something must be wrong */
+                printf("\n");
+                fprintf(stderr, "Unhandled MTrk Event op: 0x%hhx\n", op);
+                fprintf(stderr, "Current file position: %d\n", ftell(file));
+            }
+            break;
+        }
         }
     }
     return 0;
