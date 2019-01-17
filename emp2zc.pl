@@ -37,28 +37,36 @@ my $empfile = shift @ARGV;
 open EMP, "<", $empfile;
 my $tpq = 0;
 my $micspq = 0;
+
+my %channel_hash;
 while (<EMP>)
 {
     if (m/(\d+) ticks/)
     {
-        $tpq = $1;        
+        $tpq = $1;
     }
     if (m/(\d+) microseconds/)
     {
         $micspq = $1;
     }
-    if ($tpq != 0 && $micspq != 0)
+    if (m/channel (\d+)/)
     {
-        last;
+        $channel_hash{$1} = 1;
     }
 }
 
-# my $mspt = 60000 / $tpq / 120; # 120 stands for 120 quater-note per minute
+if (%channel_hash > 1)
+{
+    say "[WARNING] more than one channel occur, check emp source code or ask the musicians!";
+}
+
+
+close EMP;
 my $mspt = $micspq / $tpq / 1000;
-say "mspt $mspt";
+
+open EMP, "<", $empfile;
 my $cts = 0;
 my $ticks = 0;
-# say "$tpq $mspt";
 my @transactions;
 while (<EMP>)
 {
