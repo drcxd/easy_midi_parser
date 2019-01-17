@@ -36,16 +36,26 @@ my %h2p = qw(
 my $empfile = shift @ARGV;
 open EMP, "<", $empfile;
 my $tpq = 0;
+my $micspq = 0;
 while (<EMP>)
 {
     if (m/(\d+) ticks/)
     {
-        $tpq = $1;
+        $tpq = $1;        
+    }
+    if (m/(\d+) microseconds/)
+    {
+        $micspq = $1;
+    }
+    if ($tpq != 0 && $micspq != 0)
+    {
         last;
     }
 }
 
-my $mspt = 60000 / $tpq / 120; # 120 stands for 120 quater-note per minute
+# my $mspt = 60000 / $tpq / 120; # 120 stands for 120 quater-note per minute
+my $mspt = $micspq / $tpq / 1000;
+say "mspt $mspt";
 my $cts = 0;
 my $ticks = 0;
 # say "$tpq $mspt";

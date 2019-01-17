@@ -31,7 +31,7 @@ int main(int argc, char *argv[])
     fclose(file);
     /* unit test */
     /* test_read_vln(); */
-    /* parse_header(file); */    
+    /* parse_header(file); */
     return 0;
 }
 
@@ -50,20 +50,54 @@ char parse_events(FILE *file)
         switch (type)
         {
         case 0x03:
+        {
             fread(buff, 1, len, file);
             printf("Sequence/Track Name: %s\n", buff);
             break;
+        }
         case 0x2f:
+        {
             printf("End of Track\n");
             return 1;
             break;
+        }
+        case 0x51:
+        {
+            int mics_per_qua = 0;
+            fread(((char *)&mics_per_qua + 1), 1, len, file);
+            mics_per_qua = __builtin_bswap32(mics_per_qua);
+            printf("%d microseconds per quarter note\n", mics_per_qua);
+            break;
+        }
+        case 0x58:
+        {
+            printf("Time Signature:\n");
+            unsigned char nn, dd, cc, bb;
+            fread(&nn, 1, 1, file);
+            fread(&dd, 1, 1, file);
+            fread(&cc, 1, 1, file);
+            fread(&bb, 1, 1, file);
+            unsigned char deno = 1;
+            while (dd > 0)
+            {
+                deno *= 2;
+                --dd;
+            }
+            printf("numerator\t%hhd\n", nn);
+            printf("denominator\t%hhd\n", deno);
+            printf("%hhd\tMIDI clocks in a metronome click\n", cc);
+            printf("%hhd\t32nd-notes in a MIDI quarter-note (24 MIDI clocks)\n", bb);
+            break;
+        }
         default:
-            fprintf(stderr, "Unhandled meta event type: %d\n", type);
+        {
+            fprintf(stderr, "Unhandled meta event type: 0x%x\n", type);
             for (int i = 0; i < len; ++i)
             {
                 fgetc(file);
             }
             break;
+        }
         }
     }
     else if (op >= 0xf0)
@@ -97,7 +131,10 @@ char parse_events(FILE *file)
             break;
         }
         default:
-            fprintf(stderr, "Unhandled MTrk Event op: %hhd\n", op);
+        {
+            fprintf(stderr, "Unhandled MTrk Event op: 0x%hhx\n", op);
+            printf("\n");
+        }            
         }
     }
     return 0;
