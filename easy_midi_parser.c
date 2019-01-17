@@ -20,7 +20,7 @@ int main(int argc, char *argv[])
 {
     if (argc < 2)
     {
-        printf("Usage: %s [midifile]\n", argv[0]);
+        fprintf(stderr, "Usage: %s [midifile]\n", argv[0]);
     }
     FILE *file = fopen(argv[1], "r");
     int tracks = parse_header(file);
@@ -58,7 +58,7 @@ char parse_events(FILE *file)
             return 1;
             break;
         default:
-            printf("Unhandled meta event type: %d\n", type);
+            fprintf(stderr, "Unhandled meta event type: %d\n", type);
             for (int i = 0; i < len; ++i)
             {
                 fgetc(file);
@@ -97,7 +97,7 @@ char parse_events(FILE *file)
             break;
         }
         default:
-            printf("Unhandled MTrk Event op: %hhd\n", op);
+            fprintf(stderr, "Unhandled MTrk Event op: %hhd\n", op);
         }
     }
     return 0;
@@ -105,13 +105,13 @@ char parse_events(FILE *file)
 
 void parse_tracks(FILE *file, int trackn)
 {
-    printf("starting parse track no.%d\n", trackn);
+    fprintf(stderr, "starting parse track no.%d\n", trackn);
     char buffer[256];
     memset(buffer, 0, 256);
     fread(buffer, 1, 4, file);
     if (strncmp(buffer, "MTrk", 4) != 0)
     {
-        printf("Not a valid midi track\n");
+        fprintf(stderr, "Not a valid midi track\n");
         exit(0);
     }
     int len;
@@ -134,7 +134,7 @@ int parse_header(FILE* file)
     fread(buffer, 1, 4, file);
     if (strncmp(buffer, "MThd", 4) != 0)
     {
-        printf("Not a valid midi file\n");
+        fprintf(stderr, "Not a valid midi file\n");
         exit(0);
     }
     int len;
