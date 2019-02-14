@@ -5,33 +5,37 @@ use warnings;
 use 5.010;
 use POSIX;
 
-die "Usage: emp2zc [empfile]\n" unless @ARGV > 0;
+die "Usage: emp2zc [empfile] [instrument_type](optional)\n" unless @ARGV > 0;
 
-my %h2p = qw(
-    30 0
-    32 1
-    34 2
-    35 3
-    37 4
-    39 5
-    3b 6
-
-    3c 7
-    3e 8
-    40 9
-    41 10
-    43 11
-    45 12
-    47 13
-
-    48 14
-    4a 15
-    4c 16
-    4d 17
-    4f 18
-    51 19
-    53 20
+my %pitch24 = qw(
+    24 0    26 1    28 2    29 3    2b 4    2d 5    2f 6
+    30 7    32 8    34 9    35 10    37 11    39 12    3b 13
+    3c 14    3e 15    40 16    41 17    43 18    45 19    47 20
     );
+
+my %pitch35 = qw(
+    30 0    32 1    34 2    35 3    37 4    39 5    3b 6
+    3c 7    3e 8    40 9    41 10    43 11    45 12    47 13
+    48 14    4a 15    4c 16    4d 17    4f 18    51 19    53 20
+    );
+
+my %h2p;
+if (@ARGV > 1)
+{
+    my $inst_type = $ARGV[1];
+    if ($inst_type eq "diyinguqin")
+    {
+        %h2p = %pitch24;
+    }
+    else
+    {
+        %h2p = %pitch35;
+    }
+}
+else
+{
+    %h2p = %pitch35;
+}
 
 my $empfile = shift @ARGV;
 open EMP, "<", $empfile;
