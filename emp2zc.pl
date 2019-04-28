@@ -7,16 +7,22 @@ use POSIX;
 
 die "Usage: emp2zc [empfile] [instrument_type](optional)\n" unless @ARGV > 0;
 
-my %pitch24 = qw(
+my %bass_qin = qw(
     24 0    26 1    28 2    29 3    2b 4    2d 5    2f 6
     30 7    32 8    34 9    35 10    37 11    39 12    3b 13
     3c 14    3e 15    40 16    41 17    43 18    45 19    47 20
     );
 
-my %pitch35 = qw(
+my %normal = qw(
     30 0    32 1    34 2    35 3    37 4    39 5    3b 6
     3c 7    3e 8    40 9    41 10    43 11    45 12    47 13
     48 14    4a 15    4c 16    4d 17    4f 18    51 19    53 20
+    );
+
+my %gu = qw(
+    30 0    32 1    34 2    38 3    31 4    33 5    39 6
+    3c 7    3e 8    40 9    44 10    3d 11    3f 12    45 13
+    48 14    4a 15    4c 16    4d 17    4f 18    5d 19    5f 20
     );
 
 my %h2p;
@@ -25,16 +31,20 @@ if (@ARGV > 1)
     my $inst_type = $ARGV[1];
     if ($inst_type eq "diyinguqin")
     {
-        %h2p = %pitch24;
+        %h2p = %bass_qin;
+    }
+    elsif ($inst_type eq "gu")
+    {
+        %h2p = %gu;
     }
     else
     {
-        %h2p = %pitch35;
+        %h2p = %normal;
     }
 }
 else
 {
-    %h2p = %pitch35;
+    %h2p = %normal;
 }
 
 my $empfile = shift @ARGV;
