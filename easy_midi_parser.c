@@ -56,6 +56,12 @@ char parse_events(FILE *file)
             printf("Sequence/Track Name: %s\n", buff);
             break;
         }
+        case 0x04:
+        {
+            fread(buff, 1, len, file);
+            printf("Instrument Name: %s\n", buff);
+            break;
+        }
         case 0x2f:
         {
             printf("End of Track\n");
@@ -90,6 +96,16 @@ char parse_events(FILE *file)
             printf("%hhd\t32nd-notes in a MIDI quarter-note (24 MIDI clocks)\n", bb);
             break;
         }
+        case 0x59:
+        {
+            printf("Key Signature:\n");
+            unsigned char sf, mi;
+            fread(&sf, 1, 1, file);
+            fread(&mi, 1, 1, file);
+            printf("sf\t%hhd\n", sf);
+            printf("mi\t%hhd\n", mi);
+            break;
+        }
         default:
         {
             for (int i = 0; i < len; ++i)
@@ -110,7 +126,7 @@ char parse_events(FILE *file)
         printf("[sysex event]\t");
         printf("\n");
         prev_op = 0;
-    }
+    }    
     else
     {
         /* channel voice message */
@@ -137,6 +153,21 @@ char parse_events(FILE *file)
             prev_op = op;
             break;
         }
+        case 11: /* 0b1011 */
+        {
+            int c = fgetc(file);
+            int v = fgetc(file);
+            printf("Channel Mode Message\n");
+            prev_op = op;
+            break;
+        }
+        case 12: /* 0b1100 */
+        {
+            int p = fgetc(file);
+            printf("Program change Message\n");
+            prev_op = op;
+            break;
+        }
         default:
         {
             /* may be it is the running status in effect */
@@ -160,6 +191,13 @@ char parse_events(FILE *file)
                     int velocity = fgetc(file);
                     const char *move = PRESS;
                     printf("Note\t0x%x\t%s\tchannel\t%lld\tvelocity\t%d\n", pitch, move, prev_channel, velocity);
+                    break;
+                }
+                case 11:
+                {
+                    int c = op;
+                    int v = fgetc(file);
+                    printf("Channel Mode Message\n");
                     break;
                 }
                 default:
