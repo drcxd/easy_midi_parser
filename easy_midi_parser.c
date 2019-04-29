@@ -90,19 +90,19 @@ char parse_events(FILE *file)
                 deno *= 2;
                 --dd;
             }
-            printf("numerator\t%hhd\n", nn);
-            printf("denominator\t%hhd\n", deno);
-            printf("%hhd\tMIDI clocks in a metronome click\n", cc);
+            printf("numerator\t%hhd\t", nn);
+            printf("denominator\t%hhd\t", deno);
+            printf("%hhd\tMIDI clocks in a metronome click\t", cc);
             printf("%hhd\t32nd-notes in a MIDI quarter-note (24 MIDI clocks)\n", bb);
             break;
         }
         case 0x59:
         {
-            printf("Key Signature:\n");
+            printf("Key Signature:\t");
             unsigned char sf, mi;
             fread(&sf, 1, 1, file);
             fread(&mi, 1, 1, file);
-            printf("sf\t%hhd\n", sf);
+            printf("sf\t%hhd\t", sf);
             printf("mi\t%hhd\n", mi);
             break;
         }
@@ -198,6 +198,12 @@ char parse_events(FILE *file)
                     int c = op;
                     int v = fgetc(file);
                     printf("Channel Mode Message\n");
+                    break;
+                }
+                case 12:
+                {
+                    int p = op;
+                    printf("Program change Message\n");
                     break;
                 }
                 default:
